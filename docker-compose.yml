@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ./docker/php
+    container_name: chat_app
+    volumes:
+      - ./src:/var/www
+    working_dir: /var/www
+    depends_on:
+      - db
+
+  nginx:
+    image: nginx:latest
+    container_name: chat_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./src:/var/www
+      - ./docker/nginx:/etc/nginx/conf.d
+    depends_on:
+      - app
+
+  db:
+    image: mysql:8
+    container_name: chat_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: chat
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: laravel
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+
+volumes:
+  dbdata:
