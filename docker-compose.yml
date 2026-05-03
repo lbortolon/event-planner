@@ -27,12 +27,10 @@ services:
     container_name: chat_db
     restart: always
     environment:
-      MYSQL_DATABASE: chat
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: laravel
-      MYSQL_PASSWORD: laravel
-    ports:
-      - "3306:3306"
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
       - dbdata:/var/lib/mysql
 
