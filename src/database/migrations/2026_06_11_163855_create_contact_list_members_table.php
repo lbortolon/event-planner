@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('list_members', function (Blueprint $table) {
+        Schema::create('contact_list_members', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('list_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('contact_list_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
 
-            $table->unique(['list_id', 'user_id']);
+            $table->unique(['contact_list_id', 'user_id']);
         });
     }
 
