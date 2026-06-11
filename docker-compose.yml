@@ -4,7 +4,7 @@ services:
   app:
     build:
       context: ./docker/php
-    container_name: chat_app
+    container_name: event_app
     volumes:
       - ./src:/var/www
     working_dir: /var/www
@@ -13,7 +13,7 @@ services:
 
   nginx:
     image: nginx:latest
-    container_name: chat_nginx
+    container_name: event_nginx
     ports:
       - "80:80"
     volumes:
@@ -24,7 +24,7 @@ services:
 
   db:
     image: mysql:8
-    container_name: chat_db
+    container_name: event_db
     restart: always
     environment:
       MYSQL_DATABASE: ${DB_DATABASE}
