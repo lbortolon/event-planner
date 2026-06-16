@@ -7,16 +7,14 @@ use App\Http\Resources\ContactListMemberResource;
 use App\Models\ContactList;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class ContactListMemberController extends Controller
 {
     // POST /api/contact-lists/{contactList}/members — add a member to a list
     public function store(Request $request, ContactList $contactList)
     {
-        // Ownership check: only the list owner can add members.
-        if ($contactList->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Non autorizzato.'], 403);
-        }
+        Gate::authorize('update', $contactList);
 
         $validated = $request->validate([
             // The user to add must exist in the users table.
@@ -42,10 +40,7 @@ class ContactListMemberController extends Controller
     // DELETE /api/contact-lists/{contactList}/members/{user} — remove a member
     public function destroy(Request $request, ContactList $contactList, User $user)
     {
-        // Ownership check: only the list owner can remove members.
-        if ($contactList->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Non autorizzato.'], 403);
-        }
+        Gate::authorize('delete', $contactList);
 
         // Delete the pivot record linking this user to this list.
         $contactList->members()->where('user_id', $user->id)->delete();

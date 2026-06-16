@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ContactListResource;
 use App\Models\ContactList;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Request;
 
 class ContactListController extends Controller
@@ -47,17 +48,9 @@ class ContactListController extends Controller
     // GET /api/contact-lists/{id} — list detail including its members
     public function show(Request $request, ContactList $contactList)
     {
-        // Ownership check: the list must belong to the requesting user.
-        // TODO: refactor to a Policy (Laravel's dedicated authorization layer).
-        if ($contactList->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Non autorizzato.'], 403);
-        }
-
-        // Nested eager loading: 'members' alone would only load the pivot
-        // records (ids), because the relation chain is:
-        // ContactList -> hasMany -> ContactListMember -> belongsTo -> User.
-        // 'members.user' also loads the related User model for each member,
-        // so the response includes names/emails instead of bare ids.
+        // Ownership check
+        Gate::authorize('view', $contactList);
+        
         $contactList->load('members.user');
 
         return new ContactListResource($contactList);
@@ -66,10 +59,8 @@ class ContactListController extends Controller
     // PUT /api/contact-lists/{id} — renames a list
     public function update(Request $request, ContactList $contactList)
     {
-        // Same ownership check as show().
-        if ($contactList->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Non autorizzato.'], 403);
-        }
+        // Ownership check
+        Gate::authorize('update', $contactList);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -83,10 +74,8 @@ class ContactListController extends Controller
     // DELETE /api/contact-lists/{id}
     public function destroy(Request $request, ContactList $contactList)
     {
-        // Same ownership check as show().
-        if ($contactList->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Non autorizzato.'], 403);
-        }
+        // Ownership check
+        Gate::authorize('delete', $contactList);
 
         // Soft delete: since the model uses the SoftDeletes trait, this only
         // sets the deleted_at column. The record stays in the database and

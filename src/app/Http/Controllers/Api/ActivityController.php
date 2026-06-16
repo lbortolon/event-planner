@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use Illuminate\Http\Request;
 use App\Http\Resources\ActivityResource;
+use Illuminate\Support\Facades\Gate;
 
 class ActivityController extends Controller
 {
@@ -21,8 +22,8 @@ class ActivityController extends Controller
             })
             ->with('invitations.user')
             ->get()
-            ->map(function ($activity) use ($user) {
-                $activity->role = $activity->user_id === $user->id
+            ->map(function (Activity $activity) use ($user) {
+                $activity->role = $activity->isUserOrganizer($user)
                     ? 'organizer'
                     : 'invited';
                 return $activity;
@@ -48,29 +49,19 @@ class ActivityController extends Controller
     // GET /api/activities/{id} — activity detail with invitations
     public function show(Request $request, Activity $activity)
     {
-        $user = $request->user(); 
-        $isOrganizer = $activity->user_id === $user->id;
-        $isInvited = $activity->invitations()->where('user_id', $user->id)->exists();
+        Gate::authorize('view', $activity);
 
-        if (!$isOrganizer && !$isInvited) {
-            return response()->json(['message' => 'Non autorizzato.'], 403);
-        }
+        $activity->role = $activity->isUserOrganizer($request->user()) ? 'organizer' : 'invited';
 
         $activity->load('invitations.user');
 
-        $activity->role = $isOrganizer ? 'organizer' : 'invited';
-
-        $activityResource = new ActivityResource($activity);
-
-        return $activityResource;
+        return new ActivityResource($activity);
     }
 
     // PUT /api/activities/{id} — update an activity (organizer only)
     public function update(Request $request, Activity $activity)
     {
-        if ($activity->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Non autorizzato.'], 403);
-        }
+        Gate::authorize('update', $activity);
 
         $validated = $request->validate([
             'title'     => 'sometimes|string|max:255',
@@ -87,9 +78,7 @@ class ActivityController extends Controller
     // DELETE /api/activities/{id} — soft delete (organizer only)
     public function destroy(Request $request, Activity $activity)
     {
-        if ($activity->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Non autorizzato.'], 403);
-        }
+        Gate::authorize('delete', $activity);
 
         // Soft delete: sets deleted_at, activity is excluded from future queries.
         $activity->delete();

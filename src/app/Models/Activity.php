@@ -30,4 +30,14 @@ class Activity extends Model
     {
         return $this->hasMany(Invitation::class);
     }
+
+    public function isUserOrganizer(User $user): bool
+    {
+        return $this->user_id === $user->id;
+    }
+
+    public function isUserInvited(User $user): bool
+    {
+        return $this->invitations()->where('user_id', $user->id)->exists();
+    }
 }

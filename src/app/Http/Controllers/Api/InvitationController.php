@@ -8,6 +8,7 @@ use App\Models\Activity;
 use App\Models\Invitation;
 use App\Models\ContactList;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class InvitationController extends Controller
 {
@@ -15,10 +16,7 @@ class InvitationController extends Controller
     // Invite one or more users to an activity, by user_ids and/or contact_list_ids.
     public function store(Request $request, Activity $activity)
     {
-        // Only the organizer can invite people.
-        if ($activity->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Non autorizzato.'], 403);
-        }
+        Gate::authorize('update', $activity);
 
         $request->validate([
             'user_ids'           => 'nullable|array',
@@ -76,7 +74,6 @@ class InvitationController extends Controller
     // Respond to an invitation (accept or decline). Invited user only.
     public function update(Request $request, Activity $activity, Invitation $invitation)
     {
-        // Only the invited user can respond to their own invitation.
         if ($invitation->user_id !== $request->user()->id) {
             return response()->json(['message' => 'Non autorizzato.'], 403);
         }
@@ -112,10 +109,7 @@ class InvitationController extends Controller
     // Revoke an invitation. Organizer only.
     public function destroy(Request $request, Activity $activity, Invitation $invitation)
     {
-        // Only the organizer can revoke invitations.
-        if ($activity->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Non autorizzato.'], 403);
-        }
+        Gate::authorize('delete', $activity);
 
         $invitation->delete();
 

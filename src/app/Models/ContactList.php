@@ -23,4 +23,8 @@ class ContactList extends Model
     {
         return $this->hasMany(ContactListMember::class);
     }
+
+    public function isUserOwner(User $user): bool {
+        return $user->id === $this->user_id;
+    }
 }
