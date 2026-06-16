@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ContactListMemberResource;
 use App\Models\ContactList;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -34,7 +35,8 @@ class ContactListMemberController extends Controller
             'user_id' => $validated['user_id'],
         ]);
 
-        return response()->json($member, 201);
+        // return response()->json($member, 201);
+        return new ContactListMemberResource($member);
     }
 
     // DELETE /api/contact-lists/{contactList}/members/{user} — remove a member

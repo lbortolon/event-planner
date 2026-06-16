@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ContactListResource;
 use App\Models\ContactList;
 use Illuminate\Http\Request;
 
@@ -20,7 +21,7 @@ class ContactListController extends Controller
         $lists = $request->user()->contactLists()->get();
 
         // response()->json() defaults to HTTP 200 when no status code is given.
-        return response()->json($lists);
+        return ContactListResource::collection($lists);
     }
 
     // POST /api/contact-lists — creates a new list
@@ -37,10 +38,10 @@ class ContactListController extends Controller
         ]);
 
         // Creating through the relationship automatically sets user_id.
-        $list = $request->user()->contactLists()->create($validated);
+        $contactList = $request->user()->contactLists()->create($validated);
 
         // 201 Created is the proper REST status code for resource creation.
-        return response()->json($list, 201);
+        return new ContactListResource($contactList);
     }
 
     // GET /api/contact-lists/{id} — list detail including its members
@@ -59,7 +60,7 @@ class ContactListController extends Controller
         // so the response includes names/emails instead of bare ids.
         $contactList->load('members.user');
 
-        return response()->json($contactList);
+        return new ContactListResource($contactList);
     }
 
     // PUT /api/contact-lists/{id} — renames a list
@@ -76,7 +77,7 @@ class ContactListController extends Controller
 
         $contactList->update($validated);
 
-        return response()->json($contactList);
+        return new ContactListResource($contactList);
     }
 
     // DELETE /api/contact-lists/{id}

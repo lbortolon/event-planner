@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use Illuminate\Http\Request;
+use App\Http\Resources\ActivityResource;
 
 class ActivityController extends Controller
 {
@@ -13,21 +14,20 @@ class ActivityController extends Controller
     {
         $user = $request->user();
 
-        // Fetch activities where the user is the organizer OR has an invitation.
-        // map() adds a computed 'role' field to each activity.
-        $activities = Activity::where('user_id', $user->id)
+        return ActivityResource::collection(
+            Activity::where('user_id', $user->id)
             ->orWhereHas('invitations', function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
+            ->with('invitations.user')
             ->get()
             ->map(function ($activity) use ($user) {
                 $activity->role = $activity->user_id === $user->id
                     ? 'organizer'
                     : 'invited';
                 return $activity;
-            });
-
-        return response()->json($activities);
+            })
+        );
     }
 
     // POST /api/activities — create a new activity
@@ -42,14 +42,13 @@ class ActivityController extends Controller
 
         $activity = $request->user()->activities()->create($validated);
 
-        return response()->json($activity, 201);
+        return new ActivityResource($activity);
     }
 
     // GET /api/activities/{id} — activity detail with invitations
     public function show(Request $request, Activity $activity)
     {
-        // Both the organizer and invited users can view the activity.
-        $user = $request->user();
+        $user = $request->user(); 
         $isOrganizer = $activity->user_id === $user->id;
         $isInvited = $activity->invitations()->where('user_id', $user->id)->exists();
 
@@ -58,9 +57,12 @@ class ActivityController extends Controller
         }
 
         $activity->load('invitations.user');
+
         $activity->role = $isOrganizer ? 'organizer' : 'invited';
 
-        return response()->json($activity);
+        $activityResource = new ActivityResource($activity);
+
+        return $activityResource;
     }
 
     // PUT /api/activities/{id} — update an activity (organizer only)
@@ -79,7 +81,7 @@ class ActivityController extends Controller
 
         $activity->update($validated);
 
-        return response()->json($activity);
+        return new ActivityResource($activity);
     }
 
     // DELETE /api/activities/{id} — soft delete (organizer only)

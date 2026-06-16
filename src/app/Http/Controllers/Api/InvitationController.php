@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\InvitationResource;
 use App\Models\Activity;
 use App\Models\Invitation;
 use App\Models\ContactList;
@@ -104,7 +105,7 @@ class InvitationController extends Controller
             'responded_at' => now(),
         ]);
 
-        return response()->json($invitation);
+        return new InvitationResource($invitation);
     }
 
     // DELETE /api/activities/{activity}/invitations/{invitation}
