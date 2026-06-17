@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\ContactListMemberController;
 
 use App\Http\Controllers\Api\ActivityController;
 use App\Http\Controllers\Api\InvitationController;
+use App\Http\Controllers\Api\UserController;
 
 /**
  * Exposed
@@ -26,6 +27,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // User
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'me']);
+    
+    // List of users, searchable. Used in frontend when searching users to be added to a list
+    Route::get('/users', [UserController::class, 'index']);
 
     // Lists
     Route::apiResource('contact-lists', ContactListController::class);
