@@ -1,7 +1,11 @@
 // @refresh reset
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-// import './bootstrap';
+import './bootstrap';
+import { BrowserRouter, Routes, Route } from "react-router";
+import ReactDOM from "react-dom/client";
+import Login from './Pages/Auth/login.jsx';
+import Test from './Test.jsx';
 
 function App() {
     return (
@@ -11,8 +15,15 @@ function App() {
     );
 }
 
-const el = document.getElementById('app');
-console.log('elemento trovato:', el);
+const root = document.getElementById('app');
 
-const root = createRoot(el);
-root.render(<App />);
+ReactDOM.createRoot(root).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<App />} />
+        <Route path="login" element={<Login />} />
+      </Routes>
+    </BrowserRouter>
+  </React.StrictMode>,
+);
