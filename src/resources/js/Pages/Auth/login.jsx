@@ -1,5 +1,5 @@
 import LoginButton from '../../Components/Auth/LoginButton.jsx'
-import {useRef, useState, useEffect, useContext} from 'react';
+import {useRef, useState, useEffect} from 'react';
 import useAuth from '../../Hooks/useAuth.jsx';
 import axios from 'axios';
 import { NavLink, useNavigate, useLocation } from "react-router";
@@ -27,7 +27,6 @@ export default function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
         try {
             const response = await axios.post(apiUrl + '/login', 
                 {

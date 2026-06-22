@@ -11,6 +11,10 @@ import Missing from './Pages/missing.jsx'
 import Unauthorized from './Pages/unauthorized.jsx'
 import RequireAuth from './Components/RequireAuth.jsx'; 
 import ContactLists from './Pages/ContactList/index.jsx';
+import CreateContactList from './Pages/ContactList/create.jsx';
+import UpdateContactList from './Pages/ContactList/update.jsx';
+import DeleteContactList from './Pages/ContactList/delete.jsx';
+import Activities from './Pages/Activities/index.jsx';
 
 import { AuthProvider } from './Context/AuthProvider.jsx'
 
@@ -31,6 +35,10 @@ ReactDOM.createRoot(root).render(
               <Route element={<RequireAuth />}> 
                 <Route path="/" element={<Home />} />   
                 <Route path="/contact-lists" element={<ContactLists />} />   
+                <Route path="/contact-lists/create" element={<CreateContactList />} />  
+                <Route path="/contact-lists/update/:id" element={<UpdateContactList />} />   
+                <Route path="/contact-lists/delete/:id" element={<DeleteContactList />} />   
+                <Route path="/activities" element={<Activities />} />   
               </Route>
               {/* missing */}
               <Route path="*" element={<Missing />} /> 
