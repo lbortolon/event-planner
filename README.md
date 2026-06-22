@@ -1,12 +1,12 @@
-# Event Planner API
+# Event Planner
 
-A RESTful API built with Laravel for organizing events and managing invitations between registered users.
+A full-stack web application for organizing events and managing invitations between registered users, built with a Laravel REST API backend and a React SPA frontend.
 
 ## Overview
 
 Event Planner allows users to create activities, build private contact lists, and invite other registered users to their events. Invited users can accept or decline invitations.
 
-This project was built as a learning exercise to practice modern Laravel development, Docker-based environments, and REST API design.
+This project was built as a learning exercise to practice modern full-stack development: Docker-based environments, REST API design with Laravel, and a React SPA with token-based authentication.
 
 ## Features
 
@@ -18,13 +18,22 @@ This project was built as a learning exercise to practice modern Laravel develop
 - Role-aware responses (`organizer` / `invited`) on activity endpoints
 - Authorization via **Laravel Policies**
 - Soft deletes on lists and activities
+- React SPA with protected routes, persistent login via localStorage, and full CRUD UI
 
 ## Tech Stack
 
-- **Backend:** PHP 8.2, Laravel 11
-- **Database:** MySQL 8
-- **Authentication:** Laravel Sanctum
-- **Infrastructure:** Docker, Docker Compose, Nginx, PHP-FPM
+### Backend
+- **PHP 8.2**, Laravel 11
+- **MySQL 8**
+- **Laravel Sanctum** (token-based auth)
+
+### Frontend
+- **React 19** (JSX), Vite
+- **React Router** (client-side routing with protected routes)
+- **Axios** (with request interceptors for token injection)
+
+### Infrastructure
+- **Docker / Docker Compose** (PHP-FPM, Nginx, MySQL)
 - **VPS:** Hetzner Ubuntu 24
 - **Version control:** Git, GitHub
 
@@ -33,10 +42,10 @@ This project was built as a learning exercise to practice modern Laravel develop
 ```
 event-planner/
 ├── docker/
-│   ├── nginx/          # Nginx configuration
-│   └── php/            # PHP Dockerfile
-├── docker-compose.yml  # Container orchestration
-└── src/                # Laravel application
+│   ├── nginx/              # Nginx configuration
+│   └── php/                # PHP Dockerfile
+├── docker-compose.yml      # Container orchestration
+└── src/                    # Laravel application
     ├── app/
     │   ├── Http/
     │   │   ├── Controllers/Api/
@@ -44,7 +53,16 @@ event-planner/
     │   ├── Models/
     │   └── Policies/
     ├── database/migrations/
-    └── routes/api.php
+    ├── resources/
+    │   └── js/
+    │       ├── api/            # Axios instances
+    │       ├── Components/     # Reusable components
+    │       ├── Context/        # AuthContext + AuthProvider
+    │       ├── Hooks/          # useAuth, useAxiosPrivate
+    │       └── Pages/          # Auth, ContactList, Activities, Home
+    └── routes/
+        ├── api.php
+        └── web.php             # Catch-all for React Router
 ```
 
 ## Database Schema
@@ -63,6 +81,7 @@ event-planner/
 
 - Docker
 - Docker Compose
+- Node.js + npm (for frontend development)
 
 ### Setup
 
@@ -92,6 +111,8 @@ DB_PORT=3306
 DB_DATABASE=event_planner
 DB_USERNAME=laravel
 DB_PASSWORD=your_password
+
+VITE_API_URL=http://localhost/api
 ```
 
 3. Start the containers
@@ -100,7 +121,7 @@ DB_PASSWORD=your_password
 docker compose up -d --build
 ```
 
-4. Install dependencies and run migrations
+4. Install PHP dependencies and run migrations
 
 ```bash
 docker exec -it event_app bash
@@ -119,7 +140,15 @@ chmod -R 775 storage bootstrap/cache
 exit
 ```
 
-The API is now available at `http://localhost`.
+6. Install frontend dependencies and start Vite
+
+```bash
+cd src
+npm install
+npm run dev
+```
+
+The application is now available at `http://localhost`.
 
 ## API Endpoints
 
@@ -136,6 +165,12 @@ Authorization: Bearer <token>
 | POST | `/api/login` | Login and receive token | No |
 | POST | `/api/logout` | Invalidate current token | Yes |
 | GET | `/api/user` | Get authenticated user | Yes |
+
+### Users
+
+| Method | Endpoint | Description | Auth |
+|---|---|---|---|
+| GET | `/api/users?q=<string>` | Search users by email (partial match) | Yes |
 
 ### Contact Lists
 
@@ -185,6 +220,15 @@ Authorization is handled via Laravel Policies:
 - **ActivityPolicy** — only the organizer can update, delete, or manage invitations. Both the organizer and invited users can view an activity.
 - **ContactListPolicy** — only the owner can view, update, delete, or manage members of a list.
 
+## Frontend Architecture
+
+The React SPA communicates exclusively with the Laravel REST API via Axios. Key design decisions:
+
+- **AuthContext + useAuth:** global authentication state (token, user) shared across the component tree without prop drilling, persisted in `localStorage` across sessions.
+- **useAxiosPrivate:** custom hook that returns an Axios instance with a request interceptor that automatically attaches the Sanctum Bearer token to every protected API call.
+- **RequireAuth:** layout route component that checks authentication state and redirects unauthenticated users to login, preserving the intended destination via `location.state`.
+- **React Router catch-all:** a Laravel wildcard route (`/{any}`) serves the Blade entry point for any URL, letting React Router handle client-side navigation.
+
 ## Development Workflow
 
 ```
@@ -203,3 +247,8 @@ Local development uses `docker-compose.override.yml` to expose the database port
 - Eager loading and the N+1 query problem
 - Soft deletes and their implications
 - Git workflow across local and remote environments
+- React SPA architecture: component tree, hooks, Context API, custom hooks
+- Client-side routing with protected routes and redirect-after-login
+- Axios interceptors for transparent token injection
+- localStorage for session persistence in a token-based auth flow
+- Debugging toolchain issues (Vite + React plugin compatibility)
