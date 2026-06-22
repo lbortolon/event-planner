@@ -45,7 +45,7 @@ export default function Login() {
 
             const accessToken = response?.data?.token;
             // const roles = response?.data?.roles;
-            setAuth({user, pwd, accessToken});
+            setAuth({user, accessToken});
             setUser('');
             setPwd('');
             navigate(from, {replace: true});

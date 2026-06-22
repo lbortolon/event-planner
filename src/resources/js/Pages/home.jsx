@@ -1,14 +1,23 @@
 import { useNavigate, Link } from "react-router";
-import { useContext } from "react";
-import AuthContext from "../Context/AuthProvider";
+import useAuth from "../Hooks/useAuth";
+import useAxiosPrivate from "../Hooks/useAxiosPrivate";
 
 const Home = () => {
-    const { setAuth } = useContext(AuthContext);
+    const { setAuth } = useAuth();
     const navigate = useNavigate();
+    const axiosPrivate = useAxiosPrivate();
 
     const logout = async () => {
-        // if used in more components, this should be in context 
-        // axios to /logout endpoint 
+        const controller = new AbortController();
+        try {
+            const response = await axiosPrivate.post('/logout', {}, {
+                signal: controller.signal
+            });
+            console.log(response?.data);
+        } catch(err) {
+            console.log(err);
+        }
+        localStorage.removeItem('auth');
         setAuth({});
         navigate('/login');
     }
